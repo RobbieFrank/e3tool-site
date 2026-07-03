@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E3 Tool | Precision Machining &amp; Rapid Prototyping</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0f2d52; --blue-icon: #1e5799; --orange: #e8620a; --orange-h: #d4550a;
+      --bg-light: #ddeaf5; --bg-white: #ffffff; --bg-section: #e8f1f9;
+      --text-dark: #0f2d52; --text-body: #4a5568; --text-light: #718096; --border: #d1e3f0;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-white); color: var(--text-body); -webkit-font-smoothing: antialiased; }
+
+    /* ── RADIO INPUTS (hidden – power the nav) ── */
+    #tab-home, #tab-about, #tab-services, #tab-industries, #tab-contact { display: none; }
+
+    /* ── ALL PAGES HIDDEN BY DEFAULT ── */
+    .page { display: none; }
+
+    /* ── SHOW PAGE WHEN ITS RADIO IS CHECKED ── */
+    #tab-home:checked     ~ .site #page-home     { display: block; }
+    #tab-about:checked    ~ .site #page-about    { display: block; }
+    #tab-services:checked ~ .site #page-services { display: block; }
+    #tab-industries:checked ~ .site #page-industries { display: block; }
+    #tab-contact:checked  ~ .site #page-contact  { display: block; }
+
+    /* ── DEFAULT: show home when nothing checked ── */
+    #tab-home:checked     ~ .site #page-home,
+    .site #page-home:first-of-type { display: block; }
+    #tab-about:checked    ~ .site #page-home,
+    #tab-services:checked ~ .site #page-home,
+    #tab-industries:checked ~ .site #page-home,
+    #tab-contact:checked  ~ .site #page-home { display: none; }
+
+    /* ── NAV ACTIVE STATES ── */
+    #tab-home:checked     ~ .site nav label[for="tab-home"]     { color: #fff; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+    #tab-about:checked    ~ .site nav label[for="tab-about"]    { color: #fff; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+    #tab-services:checked ~ .site nav label[for="tab-services"] { color: #fff; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+    #tab-industries:checked ~ .site nav label[for="tab-industries"] { color: #fff; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+    #tab-contact:checked  ~ .site nav label[for="tab-contact"]  { color: #fff; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+    #tab-contact:checked  ~ .site nav label.rfq-label           { background: var(--orange-h); }
+
+    /* ── NAV ── */
+    nav { background: var(--navy); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 64px; }
+    .nav-brand { font-size: 20px; font-weight: 800; color: #fff; cursor: pointer; }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); cursor: pointer; transition: color 0.2s; display: block; }
+    .nav-links label:hover { color: #fff; }
+    .rfq-label { background: var(--orange); color: #fff !important; padding: 10px 22px; border-radius: 6px; font-weight: 600 !important; border-bottom: none !important; transition: background 0.2s; }
+    .rfq-label:hover { background: var(--orange-h); }
+    #mob-check { display: none; }
+    .ham-label { display: none; cursor: pointer; color: #fff; }
+    .mob-nav { display: none; position: fixed; inset: 0; z-index: 90; background: var(--navy); padding: 80px 32px 32px; flex-direction: column; gap: 28px; overflow-y: auto; }
+    #mob-check:checked ~ .site .mob-nav { display: flex; }
+    .mob-nav label { font-size: 22px; font-weight: 700; color: #fff; cursor: pointer; display: block; }
+    .mob-close { position: absolute; top: 20px; right: 24px; cursor: pointer; color: #fff; }
+
+    /* ── HERO ── */
+    .hero { position: relative; padding: 120px 10%; display: flex; align-items: center; min-height: 540px; overflow: hidden; }
+    .hero-single { min-height: 240px; padding: 56px 10%; }
+    .hero-bg { position: absolute; inset: 0; z-index: 0; }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(15,45,82,0.82) 0%, rgba(15,45,82,0.55) 60%, rgba(15,45,82,0.2) 100%); }
+    .hero-content { position: relative; z-index: 1; max-width: 640px; }
+    .hero h1 { font-size: clamp(28px,4vw,52px); font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 20px; }
+    .hero p { font-size: 17px; color: rgba(255,255,255,0.88); line-height: 1.7; margin-bottom: 32px; max-width: 540px; }
+    .hero-img { display: none; }
+    .breadcrumb { font-size: 13px; font-weight: 600; color: var(--orange); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .btn-cta { display: inline-block; background: var(--orange); color: #fff; padding: 12px 28px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: background 0.2s; }
+    .btn-cta:hover { background: var(--orange-h); }
+    label.btn-cta { display: inline-block; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 80px 10%; }
+    .bg-light { background: var(--bg-section); }
+    .bg-white { background: var(--bg-white); }
+    .sh { text-align: center; margin-bottom: 52px; }
+    .sh h2 { font-size: clamp(24px,3.5vw,36px); font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+    .sh p { font-size: 15px; color: var(--text-light); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+    .sh-left { margin-bottom: 32px; }
+    .sh-left h2 { font-size: clamp(22px,3vw,32px); font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+    .sh-left p { font-size: 15px; color: var(--text-light); line-height: 1.6; max-width: 640px; }
+
+    /* ── GRIDS & CARDS ── */
+    .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+    .g2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 64px; align-items: center; }
+    .card { background: var(--bg-white); border-radius: 8px; padding: 32px 24px; border: 1px solid var(--border); transition: box-shadow 0.2s, transform 0.2s; }
+    .card:hover { box-shadow: 0 8px 24px rgba(15,45,82,0.1); transform: translateY(-2px); }
+    .ci { width: 48px; height: 48px; margin-bottom: 16px; color: var(--blue-icon); }
+    .card h3 { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .card p { font-size: 14px; color: var(--text-light); line-height: 1.65; }
+    .card ul { list-style: none; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .card ul li { font-size: 13px; color: var(--text-light); display: flex; align-items: center; gap: 8px; }
+    .card ul li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
+
+    /* ── INDUSTRY CARDS ── */
+    .ic { position: relative; border-radius: 10px; overflow: hidden; min-height: 280px; display: flex; flex-direction: column; justify-content: flex-end; border: none; transition: transform 0.3s, box-shadow 0.3s; cursor: default; }
+    .ic:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(15,45,82,0.25); }
+    .ic-bg { position: absolute; inset: 0; z-index: 0; }
+    .ic-bg img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+    .ic:hover .ic-bg img { transform: scale(1.06); }
+    .ic-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,20,40,0.90) 0%, rgba(10,20,40,0.45) 55%, rgba(10,20,40,0.15) 100%); }
+    .ic-body { position: relative; z-index: 1; padding: 24px 20px; text-align: left; }
+    .ii { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .ic h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .ic p { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.5; margin-bottom: 10px; }
+    .tag { font-size: 11px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); padding: 3px 10px; border-radius: 20px; display: inline-block; margin: 2px; backdrop-filter: blur(4px); }
+    .ind8 { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+
+    /* ── WHY ── */
+    .why { display: grid; grid-template-columns: repeat(4,1fr); gap: 40px; }
+    .wi { text-align: center; }
+    .wi svg { color: var(--blue-icon); margin: 0 auto 16px; display: block; }
+    .wi h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .wi p { font-size: 14px; color: var(--text-light); line-height: 1.6; }
+
+    /* ── CTA BANNER ── */
+    .cta { background: var(--navy); border-radius: 8px; padding: 64px 40px; text-align: center; max-width: 760px; margin: 0 auto; }
+    .cta h2 { font-size: 30px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .cta p { font-size: 15px; color: rgba(255,255,255,0.75); margin-bottom: 28px; line-height: 1.6; }
+
+    /* ── PROCESS ── */
+    .steps { display: grid; grid-template-columns: repeat(4,1fr); position: relative; }
+    .steps::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px; background: var(--border); }
+    .step { text-align: center; padding: 0 16px; position: relative; z-index: 1; }
+    .snum { width: 56px; height: 56px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 3px solid var(--bg-white); box-shadow: 0 0 0 2px var(--border); }
+    .step h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .step p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+    /* ── TABLE ── */
+    .tbl { width: 100%; border-collapse: collapse; }
+    .tbl th { background: var(--navy); color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; font-weight: 600; }
+    .tbl td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    .tbl tr:nth-child(even) td { background: var(--bg-section); }
+
+    /* ── SERVICE ROWS ── */
+    .sr { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; padding: 60px 0; border-bottom: 1px solid var(--border); }
+    .sr:last-child { border-bottom: none; }
+    .sr.rev { direction: rtl; }
+    .sr.rev > * { direction: ltr; }
+    .sr-img { border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; }
+    .sr-img img { width: 100%; height: 100%; object-fit: cover; }
+    .sr h3 { font-size: 24px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
+    .sr p { font-size: 15px; color: var(--text-body); line-height: 1.75; margin-bottom: 16px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .pill { font-size: 12px; font-weight: 600; color: var(--blue-icon); background: #e8f1f9; border: 1px solid var(--border); padding: 5px 14px; border-radius: 20px; }
+
+    /* ── CONTACT LAYOUT ── */
+    .cl { display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; align-items: start; }
+    .cib { background: var(--navy); border-radius: 8px; padding: 40px; color: #fff; margin-bottom: 24px; }
+    .cib h3 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    .cd { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; }
+    .cd-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cd-text strong { display: block; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .cd-text span { font-size: 14px; color: #fff; }
+    .cmap { background: var(--bg-section); border-radius: 8px; height: 140px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); margin-top: 20px; }
+    .cmap p { font-size: 13px; color: var(--text-light); }
+    .cfb { background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px; padding: 40px; }
+    .cfb h3 { font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 24px; }
+
+    /* ── QUOTE CHECKLIST / FORMATS (reused inside progressive contact form) ── */
+    .chk { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .chk-item { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text-body); }
+    .chk-ico { width: 20px; height: 20px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .formats { background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-top: 4px; margin-bottom: 16px; }
+    .formats p { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+
+    /* ── PROGRESSIVE QUOTE TOGGLE (Contact form) ── */
+    .itype { display: flex; gap: 10px; flex-wrap: wrap; }
+    .itype-input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .itype-btn { padding: 10px 18px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-weight: 600; color: var(--text-body); cursor: pointer; transition: all 0.2s; }
+    .itype-input:checked + .itype-btn { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .quote-fields { display: none; border: 1px dashed var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; background: var(--bg-section); }
+    .cfb:has(.itype-quote:checked) .quote-fields { display: block; }
+    .quote-fields .fr:last-of-type { margin-bottom: 0; }
+    .btn-quote-text { display: none; }
+    .cfb:has(.itype-quote:checked) .btn-general-text { display: none; }
+    .cfb:has(.itype-quote:checked) .btn-quote-text { display: inline; }
+
+    /* ── FORMS ── */
+    .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .fg { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .fg label { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: 0.05em; }
+    .fg input, .fg select, .fg textarea { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 14px; color: var(--text-dark); background: var(--bg-white); outline: none; transition: border-color 0.2s; width: 100%; }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--blue-icon); }
+    .fg input::placeholder, .fg textarea::placeholder { color: #bbb; }
+    .fg textarea { resize: vertical; min-height: 110px; }
+    .fg select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23718096' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+    .file-wrap { border: 2px dashed var(--border); border-radius: 6px; padding: 24px; text-align: center; margin-bottom: 16px; }
+    .file-wrap p { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+    .file-wrap span { font-size: 12px; color: var(--text-light); }
+    .file-wrap input { display: block; margin: 10px auto 0; }
+    .btn-sub { width: 100%; background: var(--orange); color: #fff; border: none; cursor: pointer; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 700; font-family: inherit; transition: background 0.2s; }
+    .btn-sub:hover { background: var(--orange-h); }
+    .fn { font-size: 12px; color: var(--text-light); text-align: center; margin-top: 10px; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--navy); color: rgba(255,255,255,0.7); padding: 60px 10% 32px; }
+    .fgrid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; margin-bottom: 48px; max-width: 640px; }
+    .fbrand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .ftag { font-size: 14px; line-height: 1.6; }
+    .fc h4 { font-size: 13px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+    .fc ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .fc ul li label { font-size: 14px; color: rgba(255,255,255,0.65); cursor: pointer; transition: color 0.2s; display: block; }
+    .fc ul li label:hover { color: #fff; }
+    .fc ul li a { font-size: 14px; color: rgba(255,255,255,0.65); text-decoration: none; transition: color 0.2s; }
+    .fc ul li a:hover { color: #fff; }
+    .fbot { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .fbot p { font-size: 13px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .nav-links { display: none; } .ham-label { display: block; }
+      .hero { grid-template-columns: 1fr; } .hero-img { display: none; }
+      .g3 { grid-template-columns: 1fr 1fr; } .g4 { grid-template-columns: 1fr 1fr; }
+      .why { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .rl, .cl { grid-template-columns: 1fr; }
+      .fgrid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .steps { grid-template-columns: 1fr 1fr; gap: 32px; } .steps::before { display: none; }
+      .sr { grid-template-columns: 1fr; gap: 32px; } .sr.rev { direction: ltr; }
+      .ind8 { grid-template-columns: repeat(2,1fr); }
+      .g2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      nav { padding: 0 20px; } .section { padding: 60px 6%; } .hero { padding: 60px 6%; }
+      .g3, .g4, .why, .g2 { grid-template-columns: 1fr; }
+      .fr { grid-template-columns: 1fr; }
+      .rfb, .cfb { padding: 24px 20px; }
+      .fgrid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .ind8 { grid-template-columns: 1fr; }
+      .cta { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- RADIO INPUTS — these control which page shows, placed BEFORE .site so CSS siblings work -->
+<input type="radio" name="page" id="tab-home" checked />
+<input type="radio" name="page" id="tab-about" />
+<input type="radio" name="page" id="tab-services" />
+<input type="radio" name="page" id="tab-industries" />
+<input type="radio" name="page" id="tab-contact" />
+<input type="checkbox" id="mob-check" />
+
+<div class="site">
+
+  <!-- NAV -->
+  <nav>
+    <label class="nav-brand" for="tab-home">E3 Tool</label>
+    <ul class="nav-links">
+      <li><label for="tab-home">Home</label></li>
+      <li><label for="tab-about">About</label></li>
+      <li><label for="tab-services">Services</label></li>
+      <li><label for="tab-industries">Industries</label></li>
+      <li><label for="tab-contact">Contact</label></li>
+    </ul>
+    <label class="ham-label" for="mob-check">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </label>
+  </nav>
+
+  <!-- MOBILE NAV -->
+  <div class="mob-nav">
+    <label class="mob-close" for="mob-check"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></label>
+    <label for="tab-home" onclick="document.getElementById('mob-check').checked=false">Home</label>
+    <label for="tab-about" onclick="document.getElementById('mob-check').checked=false">About</label>
+    <label for="tab-services" onclick="document.getElementById('mob-check').checked=false">Services</label>
+    <label for="tab-industries" onclick="document.getElementById('mob-check').checked=false">Industries</label>
+    <label for="tab-contact" onclick="document.getElementById('mob-check').checked=false">Contact</label>
+    <label for="tab-contact" class="btn-cta" style="width:fit-content;" onclick="document.getElementById('mob-check').checked=false">Contact Us</label>
+  </div>
+
+  <!-- ═══ HOME ═══ -->
+  <div class="page" id="page-home">
+    <div class="hero">
+      <div class="hero-bg">
+        <img src="https://images.unsplash.com/photo-1666618090858-fbcee636bd3e?auto=format&fit=crop&w=1600&q=80" alt="CNC Machining" referrerpolicy="no-referrer" />
+      </div>
+      <div class="hero-content">
+        <h1>Precision Machining &amp; Rapid Prototyping Solutions</h1>
+        <p>Custom CNC &amp; 3D milling for Aerospace, Medical, Food &amp; Packaging industries. Built to your exact specifications with uncompromising quality.</p>
+        <label for="tab-contact" class="btn-cta">Contact Us</label>
+      </div>
+    </div>
+
+    <div class="section bg-white">
+      <div class="sh"><h2>Our Services</h2><p>Precision machining that powers your innovation. We transform complex designs into high-performance reality with unmatched technical expertise and speed.</p></div>
+      <div class="g3">
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><h3>Custom CNC Machining</h3><p>Precision CNC machining services for complex parts with tight tolerances.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg><h3>3D Milling &amp; Mold Making</h3><p>Advanced 3D milling and custom mold fabrication for complex geometries.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><h3>Rapid Prototyping</h3><p>48–72 hour turnaround with DFM review included on every order.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 6v12M2 12h20"/></svg><h3>CNC Turning</h3><p>Precision turning with live tooling and sub-spindle capabilities.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg><h3>Quality Inspection</h3><p>CMM inspection, FAI reports, and full material traceability on every job.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><h3>Material Versatility</h3><p>Metals, plastics, composites, and exotic alloys — all in house.</p></div>
+      </div>
+    </div>
+
+    <div class="section bg-light">
+      <div class="sh"><h2>Industries We Serve</h2><p>From flight systems to cleanroom fixtures, E3 Tool delivers mission-critical precision across the industries that demand the most.</p></div>
+      <div class="ind8">
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=600&q=80" alt="Aerospace &amp; Defense" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L8 8H3l4 3-1.5 5L12 13l6.5 3L17 11l4-3h-5L12 2z"/><line x1="12" y1="13" x2="12" y2="22"/></svg></div>
+            <h3>Aerospace &amp; Defense</h3>
+            <p>Mission-critical hardware built to fly and endure.</p>
+            <div><span class="tag">Flight Systems</span><span class="tag">Military Hardware</span><span class="tag">Space Components</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80" alt="Medical &amp; Life Sciences" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <h3>Medical &amp; Life Sciences</h3>
+            <p>Biocompatible precision for instruments that save lives.</p>
+            <div><span class="tag">Surgical Instruments</span><span class="tag">Orthopedic Implants</span><span class="tag">Lab Automation</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1565514020179-026b92b84bb6?auto=format&fit=crop&w=600&q=80" alt="Industrial Automation" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><path d="M18 14v2a2 2 0 01-2 2h-2M22 18h-4"/></svg></div>
+            <h3>Industrial Automation</h3>
+            <p>High-tolerance parts for speed and repeatability.</p>
+            <div><span class="tag">End-of-Arm Tooling</span><span class="tag">Robotic Joints</span><span class="tag">Conveyor Systems</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=600&q=80" alt="Energy, Oil &amp; Gas" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <h3>Energy, Oil &amp; Gas</h3>
+            <p>Robust components for extreme environments.</p>
+            <div><span class="tag">Downhole Tools</span><span class="tag">Turbine Components</span><span class="tag">Renewable Hardware</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=600&q=80" alt="Transportation &amp; Automotive" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg></div>
+            <h3>Transportation &amp; Automotive</h3>
+            <p>Performance-grade parts for the road and beyond.</p>
+            <div><span class="tag">Engine Components</span><span class="tag">EV Cooling Systems</span><span class="tag">Heavy Equipment</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80" alt="Electronics &amp; Semiconductors" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg></div>
+            <h3>Electronics &amp; Semiconductors</h3>
+            <p>Micron-level accuracy for electronic systems.</p>
+            <div><span class="tag">Wafer Handling</span><span class="tag">Heat Sinks</span><span class="tag">Precision Connectors</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=600&q=80" alt="Food, Beverage &amp; Pharma" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div>
+            <h3>Food, Beverage &amp; Pharma</h3>
+            <p>Cleanroom-compatible parts for regulated environments.</p>
+            <div><span class="tag">Sanitary Valves</span><span class="tag">Mixing Blades</span><span class="tag">Cleanroom Fixtures</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80" alt="Packaging" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <h3>Packaging</h3>
+            <p>Precision parts that keep packaging lines at full speed.</p>
+            <div><span class="tag">Filling Nozzles</span><span class="tag">Sealing Bars</span><span class="tag">Timing Screws</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section bg-white">
+      <div class="sh"><h2>Why Choose E3 Tool</h2><p>We combine cutting-edge technology with decades of machining expertise to deliver exceptional results.</p></div>
+      <div class="why">
+        <div class="wi"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><h3>Quality</h3><p>ISO 9001 compliant with rigorous quality control processes.</p></div>
+        <div class="wi"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><h3>Speed</h3><p>Fast turnaround times without compromising on quality.</p></div>
+        <div class="wi"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg><h3>Reliability</h3><p>Consistent results and on-time delivery you can count on.</p></div>
+        <div class="wi"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><h3>Expertise</h3><p>Over 20 years of industry experience and technical knowledge.</p></div>
+      </div>
+    </div>
+
+    <div class="section bg-light"><div class="cta"><h2>Ready to Start Your Project?</h2><p>Contact us today to discuss your precision machining needs and get a customized quote within 24 hours.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div></div>
+  </div>
+
+  <!-- ═══ ABOUT ═══ -->
+  <div class="page" id="page-about">
+    <div class="hero hero-single">
+      <div class="hero-bg"><img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1600&q=80" alt="" referrerpolicy="no-referrer" /></div>
+      <div class="hero-content"><div class="breadcrumb">About E3 Tool</div><h1>Built on Precision. Driven by Innovation.</h1><p>For over 20 years, E3 Tool has been the manufacturing partner of choice for engineers who need complex parts done right — on time, every time.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div>
+    </div>
+    <div class="section bg-white">
+      <div class="g2">
+        <div>
+          <div class="sh-left"><h2>Our Story</h2><p>From a single machine to a full-service precision facility.</p></div>
+          <p style="font-size:15px;line-height:1.8;color:var(--text-body);margin-bottom:16px;">E3 Tool was founded on a bedrock of over 20 years of hands-on manufacturing and machining experience. After two decades on the shop floor mastering programming, complex setups, and precision cutting, we built this independent shop to bring veteran technical insight directly to our clients' projects.</p>
+          <p style="font-size:15px;line-height:1.8;color:var(--text-body);">We operate as a lean, highly focused CNC machine shop equipped to handle complex components, rapid prototyping, and short-run production without the heavy corporate overhead. Because we maintain direct oversight of every project, every single part that leaves our bench undergoes rigorous inspection to ensure it matches your blueprints exactly. We are committed to growing our business the right way—by delivering honest lead times, sharp attention to detail, and precision manufacturing you can rely on.</p>
+        </div>
+        <div style="border-radius:8px;overflow:hidden;aspect-ratio:4/3;"><img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800&q=80" alt="Machine shop" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;" /></div>
+      </div>
+    </div>
+    <div class="section bg-light">
+      <div class="sh"><h2>By the Numbers</h2><p>Over two decades of precision manufacturing, measured in results.</p></div>
+      <div class="g4">
+        <div class="card" style="text-align:center;"><div style="font-size:44px;font-weight:800;color:var(--orange);margin-bottom:8px;">20+</div><h3>Years Experience</h3><p>Deep domain expertise across complex machining disciplines.</p></div>
+        <div class="card" style="text-align:center;"><div style="font-size:44px;font-weight:800;color:var(--orange);margin-bottom:8px;">500+</div><h3>Clients Served</h3><p>From startups to Fortune 500 manufacturers.</p></div>
+        <div class="card" style="text-align:center;"><div style="font-size:44px;font-weight:800;color:var(--orange);margin-bottom:8px;">15+</div><h3>Materials Machined</h3><p>Expert processing of aerospace alloys, stainless steels, and engineering plastics.</p></div>
+        <div class="card" style="text-align:center;"><div style="font-size:44px;font-weight:800;color:var(--orange);margin-bottom:8px;">100%</div><h3>Quality Inspected</h3><p>Every part inspected before it leaves our facility.</p></div>
+      </div>
+    </div>
+    <div class="section bg-white">
+      <div class="sh"><h2>Our Core Values</h2><p>The principles that guide every part we make and every relationship we build.</p></div>
+      <div class="g3">
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><h3>Precision First</h3><p>We hold ourselves to tolerances tighter than industry standard because our customers' applications demand nothing less.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg><h3>Partnership Mindset</h3><p>We act as an extension of your engineering team, solving problems before they reach the floor.</p></div>
+        <div class="card"><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><h3>Continuous Improvement</h3><p>We invest in new equipment, training, and processes to stay ahead of what your next project will require.</p></div>
+      </div>
+    </div>
+    <div class="section bg-light"><div class="cta"><h2>Let's Build Something Together</h2><p>Bring us your toughest machining challenge and we'll show you what precision manufacturing looks like at its best.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div></div>
+  </div>
+
+  <!-- ═══ SERVICES ═══ -->
+  <div class="page" id="page-services">
+    <div class="hero hero-single">
+      <div class="hero-bg"><img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=80" alt="" referrerpolicy="no-referrer" /></div>
+      <div class="hero-content"><div class="breadcrumb">Our Services</div><h1>Full-Service Precision Manufacturing</h1><p>From single prototypes to high-volume production runs, E3 Tool delivers the full spectrum of CNC machining services with uncompromising quality at every step.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div>
+    </div>
+    <div class="section bg-white">
+      <div class="sr"><div><h3>CNC Milling</h3><p>Our multi-axis CNC milling centers handle the most complex geometries with exceptional repeatability. From simple prismatic parts to contoured aerospace structures, we deliver parts that perform in the most demanding applications.</p><div class="pills"><span class="pill">3, 4 &amp; 5-Axis</span><span class="pill">Work Envelope: 40" x 20" x 25"</span><span class="pill">Spindle: Up to 20,000 RPM</span><span class="pill">Tolerance: ±.0001"</span></div></div><div class="sr-img"><img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80" alt="CNC Milling" referrerpolicy="no-referrer" /></div></div>
+      <div class="sr rev"><div><h3>CNC Turning</h3><p>Precision turning with live tooling and sub-spindle capabilities allows us to complete complex cylindrical components in a single setup — reducing handling time and improving concentricity and surface finish.</p><div class="pills"><span class="pill">Live Tooling</span><span class="pill">Max Diameter: 15"</span><span class="pill">Max Length: 24"</span><span class="pill">Bar Capacity: 3"</span></div></div><div class="sr-img"><img src="https://images.unsplash.com/photo-1570207344214-c60ad57f3c00?auto=format&fit=crop&w=800&q=80" alt="CNC Turning" referrerpolicy="no-referrer" /></div></div>
+      <div class="sr"><div><h3>Rapid Prototyping</h3><p>Speed from concept to validated part. Our rapid prototyping service includes DFM feedback with every order — helping you catch costly design issues before committing to production tooling.</p><div class="pills"><span class="pill">48–72 Hour Turnaround</span><span class="pill">DFM Review Included</span><span class="pill">Single Piece to Small Batch</span><span class="pill">NDA Available</span></div></div><div class="sr-img"><img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800&q=80" alt="Prototyping" referrerpolicy="no-referrer" /></div></div>
+      <div class="sr rev"><div><h3>Mold Making</h3><p>Custom mold design and fabrication for injection molding, die casting, and specialty forming applications. We work with hardened tool steels and aluminum tooling to match your production volume and budget.</p><div class="pills"><span class="pill">Injection Molds</span><span class="pill">Die Cast Tooling</span><span class="pill">Aluminum &amp; Steel</span><span class="pill">High-Cavity Molds</span></div></div><div class="sr-img"><img src="https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=800&q=80" alt="Mold Making" referrerpolicy="no-referrer" /></div></div>
+    </div>
+    <div class="section bg-light">
+      <div class="sh"><h2>Materials We Work With</h2><p>If it can be machined, we've likely run it. Here's what we work with most.</p></div>
+      <div class="g3">
+        <div class="card"><h3>Metals</h3><ul><li>Aluminum (6061, 7075, 2024)</li><li>Stainless Steel (303, 316, 17-4)</li><li>Titanium (Grade 5, Grade 23)</li><li>Inconel 718 &amp; 625</li><li>Tool Steel (D2, A2, H13)</li><li>Brass &amp; Copper Alloys</li></ul></div>
+        <div class="card"><h3>Plastics &amp; Composites</h3><ul><li>PEEK &amp; Ultem</li><li>Delrin (Acetal)</li><li>Nylon &amp; PTFE</li><li>Polycarbonate</li><li>Carbon Fiber Composites</li><li>G10 / FR4</li></ul></div>
+        <div class="card"><h3>Specialty &amp; Exotic</h3><ul><li>Kovar &amp; Invar</li><li>Hastelloy</li><li>Tungsten &amp; Molybdenum</li><li>Ceramic Composites</li><li>Medical-Grade Alloys</li><li>Custom Alloys on Request</li></ul></div>
+      </div>
+    </div>
+    <div class="section bg-white">
+      <div class="sh"><h2>Our Process</h2><p>Simple, transparent, and engineered for speed.</p></div>
+      <div class="steps">
+        <div class="step"><div class="snum">1</div><h3>Submit Your Files</h3><p>Upload CAD files (STEP, IGES, DXF, PDF) and project requirements through our quote form.</p></div>
+        <div class="step"><div class="snum">2</div><h3>Engineering Review</h3><p>Our team reviews your design, flags DFM concerns, and delivers a detailed quote within 24 hours.</p></div>
+        <div class="step"><div class="snum">3</div><h3>Production</h3><p>Approved jobs go directly to programming and machining with real-time status updates.</p></div>
+        <div class="step"><div class="snum">4</div><h3>Inspect &amp; Ship</h3><p>Every part is inspected against spec. We ship with your carrier of choice.</p></div>
+      </div>
+    </div>
+    <div class="section bg-light"><div class="cta"><h2>Have a Complex Part in Mind?</h2><p>Send us your drawings and we'll tell you exactly how we'd approach it — no obligation, no delays.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div></div>
+  </div>
+
+  <!-- ═══ INDUSTRIES ═══ -->
+  <div class="page" id="page-industries">
+    <div class="hero hero-single">
+      <div class="hero-bg"><img src="https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=1600&q=80" alt="" referrerpolicy="no-referrer" /></div>
+      <div class="hero-content"><div class="breadcrumb">Industries We Serve</div><h1>Precision for the Industries That Can't Afford Compromise</h1><p>E3 Tool is built for sectors where tolerances are tight, traceability is mandatory, and failure is not an option.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div>
+    </div>
+    <div class="section bg-white">
+      <div class="ind8">
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=600&q=80" alt="Aerospace &amp; Defense" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L8 8H3l4 3-1.5 5L12 13l6.5 3L17 11l4-3h-5L12 2z"/><line x1="12" y1="13" x2="12" y2="22"/></svg></div>
+            <h3>Aerospace &amp; Defense</h3>
+            <p>Mission-critical hardware built to fly and endure.</p>
+            <div><span class="tag">Flight Systems</span><span class="tag">Military Hardware</span><span class="tag">Space Components</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80" alt="Medical &amp; Life Sciences" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <h3>Medical &amp; Life Sciences</h3>
+            <p>Biocompatible precision for instruments that save lives.</p>
+            <div><span class="tag">Surgical Instruments</span><span class="tag">Orthopedic Implants</span><span class="tag">Lab Automation</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1565514020179-026b92b84bb6?auto=format&fit=crop&w=600&q=80" alt="Industrial Automation" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><path d="M18 14v2a2 2 0 01-2 2h-2M22 18h-4"/></svg></div>
+            <h3>Industrial Automation</h3>
+            <p>High-tolerance parts for speed and repeatability.</p>
+            <div><span class="tag">End-of-Arm Tooling</span><span class="tag">Robotic Joints</span><span class="tag">Conveyor Systems</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=600&q=80" alt="Energy, Oil &amp; Gas" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <h3>Energy, Oil &amp; Gas</h3>
+            <p>Robust components for extreme environments.</p>
+            <div><span class="tag">Downhole Tools</span><span class="tag">Turbine Components</span><span class="tag">Renewable Hardware</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=600&q=80" alt="Transportation &amp; Automotive" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg></div>
+            <h3>Transportation &amp; Automotive</h3>
+            <p>Performance-grade parts for the road and beyond.</p>
+            <div><span class="tag">Engine Components</span><span class="tag">EV Cooling Systems</span><span class="tag">Heavy Equipment</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80" alt="Electronics &amp; Semiconductors" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg></div>
+            <h3>Electronics &amp; Semiconductors</h3>
+            <p>Micron-level accuracy for electronic systems.</p>
+            <div><span class="tag">Wafer Handling</span><span class="tag">Heat Sinks</span><span class="tag">Precision Connectors</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=600&q=80" alt="Food, Beverage &amp; Pharma" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div>
+            <h3>Food, Beverage &amp; Pharma</h3>
+            <p>Cleanroom-compatible parts for regulated environments.</p>
+            <div><span class="tag">Sanitary Valves</span><span class="tag">Mixing Blades</span><span class="tag">Cleanroom Fixtures</span></div>
+          </div>
+        </div>
+        <div class="ic">
+          <div class="ic-bg"><img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80" alt="Packaging" referrerpolicy="no-referrer" /></div>
+          <div class="ic-body">
+            <div class="ii"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <h3>Packaging</h3>
+            <p>Precision parts that keep packaging lines at full speed.</p>
+            <div><span class="tag">Filling Nozzles</span><span class="tag">Sealing Bars</span><span class="tag">Timing Screws</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section bg-light">
+      <div class="sh"><h2>Cross-Industry Capabilities</h2><p>Standards and certifications that qualify us for the most demanding applications.</p></div>
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead><tr><th>Standard / Certification</th><th>Description</th><th>Applicable Industries</th></tr></thead>
+          <tbody>
+            <tr><td>ISO 9001 Compliant</td><td>Quality management system ensuring consistent, traceable production</td><td>All industries</td></tr>
+            <tr><td>AS9100D</td><td>Aerospace quality management for flight and defense hardware</td><td>Aerospace, Defense, Space</td></tr>
+            <tr><td>ITAR Awareness</td><td>Export control compliance for controlled defense articles</td><td>Defense, Government</td></tr>
+            <tr><td>First Article Inspection (FAI)</td><td>Documented dimensional verification of first production parts</td><td>Aerospace, Medical, Automotive</td></tr>
+            <tr><td>CMM Inspection</td><td>Coordinate measuring machine verification for critical dimensions</td><td>All industries</td></tr>
+            <tr><td>Material Traceability</td><td>Full mill cert documentation and heat/lot traceability</td><td>Aerospace, Medical, Energy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="section bg-white"><div class="cta"><h2>Your Industry. Our Expertise.</h2><p>Tell us about your application and we'll match you with the right process, material, and timeline.</p><label for="tab-contact" class="btn-cta">Contact Us</label></div></div>
+  </div>
+
+  <!-- ═══ CONTACT ═══ -->
+  <div class="page" id="page-contact">
+    <div class="hero hero-single">
+      <div class="hero-bg"><img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=1600&q=80" alt="" referrerpolicy="no-referrer" /></div>
+      <div class="hero-content"><div class="breadcrumb">Contact Us</div><h1>Let's Talk About Your Project</h1><p>Whether you have a drawing ready or just an idea, our engineering team is ready to help. We'll respond within one business day.</p></div>
+    </div>
+    <div class="section bg-light">
+      <div class="cl">
+        <div>
+          <div class="cib">
+            <h3>Contact Information</h3>
+            <div class="cd"><div class="cd-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .86h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.82a16 16 0 006.27 6.27l1.06-1.06a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div><div class="cd-text"><strong>Phone</strong><span>(555) 123-4567</span></div></div>
+            <div class="cd"><div class="cd-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="cd-text"><strong>Email</strong><span>engineering@e3tool.com</span></div></div>
+            <div class="cd"><div class="cd-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="cd-text"><strong>Address</strong><span>123 Machining Way, Industrial Park, USA</span></div></div>
+            <div class="cd"><div class="cd-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="cd-text"><strong>Hours</strong><span>Monday – Friday: 7:00 AM – 5:00 PM</span></div></div>
+            <div class="cmap"><p>123 Machining Way, Industrial Park, USA</p></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:14px;">Requesting a Quote?</h3>
+            <p style="margin-bottom:16px;">Select "Request a Quote" in the form and it'll open up the project details we need — no separate form required.</p>
+            <div class="chk">
+              <div class="chk-item"><div class="chk-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>Engineering review of your CAD files and drawings</div>
+              <div class="chk-item"><div class="chk-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>DFM feedback included at no charge</div>
+              <div class="chk-item"><div class="chk-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>Itemized quote with lead time and pricing</div>
+              <div class="chk-item"><div class="chk-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>NDA available upon request</div>
+            </div>
+          </div>
+        </div>
+        <div class="cfb">
+          <h3>Send Us a Message</h3>
+          <form action="https://formspree.io/f/mreywzar" method="POST" enctype="multipart/form-data">
+            <div class="fr"><div class="fg"><label>First Name</label><input type="text" name="first_name" placeholder="John" /></div><div class="fg"><label>Last Name</label><input type="text" name="last_name" placeholder="Smith" /></div></div>
+            <div class="fr"><div class="fg"><label>Email *</label><input type="email" name="email" placeholder="john@company.com" required /></div><div class="fg"><label>Phone</label><input type="tel" name="phone" placeholder="(555) 000-0000" /></div></div>
+            <div class="fg"><label>Company</label><input type="text" name="company" placeholder="Your company name" /></div>
+
+            <div class="fg">
+              <label>What can we help you with?</label>
+              <div class="itype">
+                <input type="radio" id="itype-general" class="itype-input" name="inquiry_type" value="General Inquiry" checked />
+                <label for="itype-general" class="itype-btn">General Inquiry</label>
+                <input type="radio" id="itype-quote" class="itype-input itype-quote" name="inquiry_type" value="Request a Quote" />
+                <label for="itype-quote" class="itype-btn">Request a Quote</label>
+              </div>
+            </div>
+
+            <div class="quote-fields">
+              <div class="fr">
+                <div class="fg"><label>Service Needed</label><select name="service"><option value="" disabled selected>Select service</option><option>CNC Milling</option><option>CNC Turning</option><option>Rapid Prototyping</option><option>Mold Making</option><option>Multiple / Unsure</option></select></div>
+                <div class="fg"><label>Material</label><select name="material"><option value="" disabled selected>Select material</option><option>Aluminum 6061-T6</option><option>Stainless Steel 316L</option><option>Titanium Grade 5</option><option>Inconel 718</option><option>Plastic / PEEK</option><option>Other / Unsure</option></select></div>
+              </div>
+              <div class="fr">
+                <div class="fg"><label>Quantity</label><input type="text" name="quantity" placeholder="e.g. 1, 25, 500+" /></div>
+                <div class="fg"><label>Target Lead Time</label><select name="lead_time"><option value="" disabled selected>Select timeline</option><option>ASAP (Rush)</option><option>1–2 Weeks</option><option>2–4 Weeks</option><option>4+ Weeks</option><option>Flexible</option></select></div>
+              </div>
+              <div class="formats"><p>Accepted File Formats</p><div><span class="pill">STEP</span><span class="pill">IGES</span><span class="pill">DXF</span><span class="pill">DWG</span><span class="pill">PDF</span><span class="pill">SolidWorks</span><span class="pill">CATIA</span></div></div>
+              <div class="file-wrap" style="margin-bottom:0;"><p>Upload CAD Files or Drawings</p><span>STEP, IGES, DXF, DWG, PDF — Max 25MB per file</span><input type="file" name="attachment" multiple accept=".step,.stp,.iges,.igs,.dxf,.dwg,.pdf,.sldprt" /></div>
+            </div>
+
+            <div class="fg"><label>Message *</label><textarea name="message" placeholder="Tell us about your project or question — for quote requests, include tolerances, finish requirements, and any other relevant details." style="min-height:130px;" required></textarea></div>
+            <button type="submit" class="btn-sub"><span class="btn-general-text">Send Message</span><span class="btn-quote-text">Submit Quote Request</span></button>
+            <p class="fn">No obligation. We'll respond within one business day.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="fgrid">
+      <div><div class="fbrand">E3 Tool</div><p class="ftag">Precision CNC machining and rapid prototyping for Aerospace, Medical, Industrial, and Packaging industries. Built to spec. Delivered on time.</p></div>
+      <div class="fc"><h4>Contact</h4><ul><li><a href="tel:5551234567">(555) 123-4567</a></li><li><a href="mailto:engineering@e3tool.com">engineering@e3tool.com</a></li><li><label for="tab-contact">123 Machining Way, USA</label></li><li><label for="tab-contact">Mon–Fri: 7am – 5pm</label></li></ul></div>
+    </div>
+    <div class="fbot"><p>&copy; 2026 E3 Tool. All rights reserved.</p><p>Precision Machining &amp; Rapid Prototyping</p></div>
+  </footer>
+
+</div><!-- /.site -->
+</body>
+</html>
